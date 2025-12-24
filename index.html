@@ -3,12 +3,35 @@
 <head>
   <title>UPI Scanner</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    #reader-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    #reader {
+      max-width: 95vw;
+      min-width: 200px;
+      margin: auto;
+    }
+    @media (max-width: 600px) {
+      #reader {
+        width: 90vw !important;
+        min-width: 120px;
+      }
+    }
+  </style>
 </head>
 <body>
 
 <h2>Scan UPI QR</h2>
 
-<div id="reader" style="width:300px"></div>
+
+<div id="reader-container">
+  <div id="reader"></div>
+</div>
 
 <pre id="result"></pre>
 
@@ -16,18 +39,43 @@
   Pay Now
 </button>
 
+<div id="upiAppSelectContainer" style="display:none; margin: 12px 0;">
+  <label for="upiAppSelect">Choose UPI App: </label>
+  <select id="upiAppSelect" style="padding:6px; font-size:15px;">
+    <option value="">Default (Any UPI App)</option>
+    <option value="paytm">Paytm</option>
+    <option value="phonepe">PhonePe</option>
+    <option value="gpay">Google Pay</option>
+    <option value="bhim">BHIM</option>
+    <option value="amazonpay">Amazon Pay</option>
+  </select>
+</div>
+
+<h3>Scanned UPI Codes</h3>
+<ul id="upiList" style="max-width:400px; padding-left:20px;"></ul>
+
 <script>
+
 const result = document.getElementById("result");
 const payBtn = document.getElementById("payBtn");
-
+const upiList = document.getElementById("upiList");
+const upiAppSelectContainer = document.getElementById("upiAppSelectContainer");
+const upiAppSelect = document.getElementById("upiAppSelect");
 let scannedUpiUrl = "";
 
 function onScanSuccess(decodedText) {
   scannedUpiUrl = decodedText;
   result.innerText = decodedText;
 
-  // Show Pay button
+
+  // Show Pay button and UPI app select
   payBtn.style.display = "inline-block";
+  upiAppSelectContainer.style.display = "block";
+
+  // Add to UPI list
+  const li = document.createElement('li');
+  li.textContent = decodedText;
+  upiList.prepend(li);
 
   // Send to backend (optional)
   fetch("https://upi-payment-sand.vercel.app/api/upi/parse", {
@@ -46,15 +94,53 @@ payBtn.onclick = () => {
     return;
   }
 
-  // Trigger UPI intent
-  window.location.href = scannedUpiUrl;
+  // Get selected app
+  const app = upiAppSelect.value;
+  let intentUrl = scannedUpiUrl;
+
+  // Deep link for popular UPI apps (works on mobile)
+  if (app === "paytm") {
+    intentUrl = `paytmmp://pay?${scannedUpiUrl.replace('upi://pay?', '')}`;
+  } else if (app === "phonepe") {
+    intentUrl = `phonepe://upi/pay?${scannedUpiUrl.replace('upi://pay?', '')}`;
+  } else if (app === "gpay") {
+    intentUrl = `tez://upi/pay?${scannedUpiUrl.replace('upi://pay?', '')}`;
+  } else if (app === "bhim") {
+    intentUrl = `bhim://upi/pay?${scannedUpiUrl.replace('upi://pay?', '')}`;
+  } else if (app === "amazonpay") {
+    intentUrl = `amazonpay://upi/pay?${scannedUpiUrl.replace('upi://pay?', '')}`;
+  }
+
+  // Open the selected UPI app or fallback to default
+  window.location.href = intentUrl;
 };
 
-new Html5Qrcode("reader").start(
-  { facingMode: "environment" },
-  { fps: 10, qrbox: 250 },
-  onScanSuccess
-);
+
+// Responsive QR scanner
+function getQrBoxSize() {
+  const width = window.innerWidth;
+  if (width < 400) return width * 0.8;
+  if (width < 600) return 300;
+  return 350;
+}
+
+function startScanner() {
+  const qrbox = getQrBoxSize();
+  document.getElementById('reader').style.width = qrbox + 'px';
+  new Html5Qrcode("reader").start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: qrbox },
+    onScanSuccess
+  );
+}
+
+window.addEventListener('DOMContentLoaded', startScanner);
+window.addEventListener('resize', () => {
+  // Restart scanner on resize for responsiveness
+  document.getElementById('reader').innerHTML = '';
+  startScanner();
+});
+  
 </script>
 
 </body>
