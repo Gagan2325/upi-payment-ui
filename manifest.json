@@ -1,0 +1,8 @@
+{
+  "name": "UPI Smart Pay",
+  "short_name": "UPI Pay",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a73e8"
+}
