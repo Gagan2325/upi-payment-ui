@@ -2,21 +2,129 @@
 <html>
 <head>
   <title>UPI Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #f6f8fa;
+      margin: 0;
+      min-height: 100vh;
+      color: #222;
+    }
+    .container {
+      max-width: 420px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 28px 20px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #2d3748;
+      text-align: center;
+    }
     #reader-container {
       display: flex;
       justify-content: center;
       align-items: center;
       width: 100%;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
     }
     #reader {
       max-width: 95vw;
       min-width: 200px;
       margin: auto;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      background: #f3f4f6;
+      padding: 8px;
+    }
+    #result {
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 1rem;
+      color: #444;
+      margin-bottom: 0;
+      min-height: 24px;
+      word-break: break-all;
+    }
+    #payBtn {
+      background: linear-gradient(90deg,#4f8cff,#38b6ff);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 12px 0;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      transition: background 0.2s;
+      margin-top: 6px;
+    }
+    #payBtn:hover {
+      background: linear-gradient(90deg,#38b6ff,#4f8cff);
+    }
+    #upiAppSelectContainer {
+      display: none;
+      margin: 12px 0 0 0;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #upiAppSelect {
+      padding: 8px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background: #f3f4f6;
+      margin-top: 2px;
+      width: 100%;
+    }
+    #upiAppSelectContainer label {
+      font-size: 1rem;
+      color: #444;
+      margin-bottom: 2px;
+    }
+    #upiAppSelectContainer em {
+      color: #888;
+      font-size: 0.95rem;
+    }
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 18px 0 8px 0;
+      color: #2d3748;
+    }
+    #upiList {
+      max-width: 100%;
+      padding-left: 0;
+      list-style: none;
+      margin: 0;
+    }
+    #upiList li {
+      background: #f3f4f6;
+      border-radius: 7px;
+      margin-bottom: 7px;
+      padding: 8px 12px;
+      font-size: 0.98rem;
+      color: #333;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      word-break: break-all;
     }
     @media (max-width: 600px) {
+      .container {
+        max-width: 98vw;
+        padding: 12px 4vw 16px 4vw;
+      }
       #reader {
         width: 90vw !important;
         min-width: 120px;
@@ -26,36 +134,28 @@
 </head>
 <body>
 
-<h2>Scan UPI QR</h2>
-
-
-<div id="reader-container">
-  <div id="reader"></div>
-</div>
-
-<pre id="result"></pre>
-
-<button id="payBtn" style="display:none; padding:10px 20px; font-size:16px;">
-  Pay Now
-</button>
-
-<div id="upiAppSelectContainer" style="display:none; margin: 12px 0;">
-  <label for="upiAppSelect">Choose UPI App: </label>
-  <select id="upiAppSelect" style="padding:6px; font-size:15px;">
-    <option value="">Default (Any UPI App)</option>
-    <option value="paytm">Paytm</option>
-    <option value="phonepe">PhonePe</option>
-    <option value="gpay">Google Pay</option>
-    <option value="bhim">BHIM</option>
-    <option value="amazonpay">Amazon Pay</option>
-  </select>
-  <div style="font-size:13px; color:#666; margin-top:4px; max-width:350px;">
-    <em>Note: Only popular UPI apps are listed. Web browsers cannot detect all UPI apps installed on your device. If the selected app is not installed, your phone will prompt you to choose an available UPI app.</em>
+<div class="container">
+  <h2>Scan UPI QR</h2>
+  <div id="reader-container">
+    <div id="reader"></div>
   </div>
+  <pre id="result"></pre>
+  <button id="payBtn" style="display:none;">Pay Now</button>
+  <div id="upiAppSelectContainer">
+    <label for="upiAppSelect">Choose UPI App: </label>
+    <select id="upiAppSelect">
+      <option value="">Default (Any UPI App)</option>
+      <option value="paytm">Paytm</option>
+      <option value="phonepe">PhonePe</option>
+      <option value="gpay">Google Pay</option>
+      <option value="bhim">BHIM</option>
+      <option value="amazonpay">Amazon Pay</option>
+    </select>
+    <div><em>Note: Only popular UPI apps are listed. Web browsers cannot detect all UPI apps installed on your device. If the selected app is not installed, your phone will prompt you to choose an available UPI app.</em></div>
+  </div>
+  <h3>Scanned UPI Codes</h3>
+  <ul id="upiList"></ul>
 </div>
-
-<h3>Scanned UPI Codes</h3>
-<ul id="upiList" style="max-width:400px; padding-left:20px;"></ul>
 
 <script>
 
